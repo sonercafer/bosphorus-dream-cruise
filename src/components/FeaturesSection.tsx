@@ -1,4 +1,5 @@
 import { Utensils, Music, Camera, Users, Sparkles, Clock } from "lucide-react";
+import { motion } from "framer-motion";
 
 const features = [
   {
@@ -47,7 +48,12 @@ const FeaturesSection = () => {
       <div className="container mx-auto px-4 relative z-10">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           {/* Left Content */}
-          <div>
+          <motion.div
+            initial={{ opacity: 0, x: -50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
             <span className="text-gold text-sm font-medium uppercase tracking-widest">Neden Biz?</span>
             <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold mt-4 mb-6 text-foreground">
               <span className="text-gradient-gold">15 Yıllık</span> Deneyim
@@ -60,35 +66,43 @@ const FeaturesSection = () => {
             </p>
 
             <div className="flex flex-wrap gap-4">
-              <div className="flex items-center gap-2 text-foreground/80">
-                <div className="w-2 h-2 rounded-full bg-gold" />
-                <span>7/24 Destek</span>
-              </div>
-              <div className="flex items-center gap-2 text-foreground/80">
-                <div className="w-2 h-2 rounded-full bg-gold" />
-                <span>Sigortalı Etkinlik</span>
-              </div>
-              <div className="flex items-center gap-2 text-foreground/80">
-                <div className="w-2 h-2 rounded-full bg-gold" />
-                <span>Profesyonel Ekip</span>
-              </div>
+              {["7/24 Destek", "Sigortalı Etkinlik", "Profesyonel Ekip"].map((item, i) => (
+                <motion.div 
+                  key={item}
+                  className="flex items-center gap-2 text-foreground/80"
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.3 + i * 0.1 }}
+                >
+                  <div className="w-2 h-2 rounded-full bg-gold" />
+                  <span>{item}</span>
+                </motion.div>
+              ))}
             </div>
-          </div>
+          </motion.div>
 
           {/* Right Features Grid */}
           <div className="grid grid-cols-2 gap-4">
             {features.map((feature, index) => (
-              <div
+              <motion.div
                 key={feature.title}
-                className="group p-6 rounded-2xl glass-card hover:border-gold/30 transition-all duration-300 hover:-translate-y-1"
-                style={{ animationDelay: `${index * 0.1}s` }}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                whileHover={{ y: -5, scale: 1.02 }}
+                className="group p-6 rounded-2xl glass-card hover:border-gold/30 transition-all duration-300"
               >
-                <div className="w-12 h-12 rounded-xl bg-gold/10 flex items-center justify-center mb-4 group-hover:bg-gold/20 transition-colors">
+                <motion.div 
+                  className="w-12 h-12 rounded-xl bg-gold/10 flex items-center justify-center mb-4 group-hover:bg-gold/20 transition-colors"
+                  whileHover={{ rotate: 10 }}
+                >
                   <feature.icon className="w-6 h-6 text-gold" />
-                </div>
+                </motion.div>
                 <h3 className="font-semibold text-foreground mb-2">{feature.title}</h3>
                 <p className="text-sm text-muted-foreground">{feature.description}</p>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
