@@ -48,7 +48,7 @@ const Header = () => {
             </div>
             <div className="flex flex-col">
               <span className="text-lg font-serif font-semibold text-foreground">Selamet Kadir</span>
-              <span className="text-xs text-muted-foreground tracking-wider uppercase">Davet Teknesi..</span>
+              <span className="text-xs text-muted-foreground tracking-wider uppercase">Davet Teknesi</span>
             </div>
           </motion.a>
 
