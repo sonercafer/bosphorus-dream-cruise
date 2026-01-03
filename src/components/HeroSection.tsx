@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, Sparkles, Play } from "lucide-react";
 import { motion, useScroll, useTransform } from "framer-motion";
-import heroImage from "@/assets/hero-bosphorus.jpg";
+import heroImage from "@/assets/hero-selamet-kadir.jpg";
 
 const HeroSection = () => {
   const ref = useRef<HTMLElement>(null);
