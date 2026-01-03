@@ -1,7 +1,91 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Phone, Mail, MapPin, MessageCircle, Send } from "lucide-react";
+import { Phone, Mail, MapPin, MessageCircle, Send, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { z } from "zod";
+
+const quoteSchema = z.object({
+  name: z.string().trim().min(2, "Ad en az 2 karakter olmalı").max(100, "Ad çok uzun"),
+  email: z.string().trim().email("Geçerli bir e-posta adresi girin"),
+  phone: z.string().trim().min(10, "Geçerli bir telefon numarası girin").max(20, "Telefon numarası çok uzun"),
+  eventType: z.string().min(1, "Etkinlik türü seçin"),
+  eventDate: z.string().optional(),
+  guestCount: z.string().optional(),
+  message: z.string().max(1000, "Mesaj çok uzun").optional(),
+});
+
+type QuoteFormData = z.infer<typeof quoteSchema>;
 
 const ContactSection = () => {
+  const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState<QuoteFormData>({
+    name: "",
+    email: "",
+    phone: "",
+    eventType: "",
+    eventDate: "",
+    guestCount: "",
+    message: "",
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Validate form data
+    const validation = quoteSchema.safeParse(formData);
+    if (!validation.success) {
+      const firstError = validation.error.errors[0];
+      toast({
+        title: "Form Hatası",
+        description: firstError.message,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('send-quote-email', {
+        body: formData,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Başarılı!",
+        description: "Teklif talebiniz alındı. En kısa sürede sizinle iletişime geçeceğiz.",
+      });
+
+      // Reset form
+      setFormData({
+        name: "",
+        email: "",
+        phone: "",
+        eventType: "",
+        eventDate: "",
+        guestCount: "",
+        message: "",
+      });
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      toast({
+        title: "Hata",
+        description: "Bir sorun oluştu. Lütfen daha sonra tekrar deneyin veya bizi arayın.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <section id="contact" className="py-24 bg-background relative overflow-hidden">
       {/* Background decoration */}
@@ -57,13 +141,17 @@ const ContactSection = () => {
 
             {/* Quick Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button variant="hero" size="lg" className="flex-1">
-                <Phone className="w-5 h-5" />
-                <span>Hemen Arayın</span>
+              <Button variant="hero" size="lg" className="flex-1" asChild>
+                <a href="tel:+905551234567">
+                  <Phone className="w-5 h-5" />
+                  <span>Hemen Arayın</span>
+                </a>
               </Button>
-              <Button variant="whatsapp" size="lg" className="flex-1">
-                <MessageCircle className="w-5 h-5" />
-                <span>WhatsApp</span>
+              <Button variant="whatsapp" size="lg" className="flex-1" asChild>
+                <a href="https://wa.me/905551234567" target="_blank" rel="noopener noreferrer">
+                  <MessageCircle className="w-5 h-5" />
+                  <span>WhatsApp</span>
+                </a>
               </Button>
             </div>
           </div>
@@ -73,58 +161,120 @@ const ContactSection = () => {
             <h3 className="font-serif text-2xl font-semibold text-foreground mb-6">
               Ücretsiz Teklif Alın
             </h3>
-            <form className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm text-muted-foreground mb-2">Adınız</label>
+                  <label className="block text-sm text-muted-foreground mb-2">Ad Soyad *</label>
                   <input
                     type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
                     className="w-full px-4 py-3 rounded-xl bg-muted/50 border border-border/50 text-foreground placeholder:text-muted-foreground focus:border-gold focus:outline-none transition-colors"
-                    placeholder="Adınız"
+                    placeholder="Adınız Soyadınız"
+                    required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-muted-foreground mb-2">Soyadınız</label>
+                  <label className="block text-sm text-muted-foreground mb-2">E-posta *</label>
                   <input
-                    type="text"
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
                     className="w-full px-4 py-3 rounded-xl bg-muted/50 border border-border/50 text-foreground placeholder:text-muted-foreground focus:border-gold focus:outline-none transition-colors"
-                    placeholder="Soyadınız"
+                    placeholder="ornek@email.com"
+                    required
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm text-muted-foreground mb-2">Telefon</label>
-                <input
-                  type="tel"
-                  className="w-full px-4 py-3 rounded-xl bg-muted/50 border border-border/50 text-foreground placeholder:text-muted-foreground focus:border-gold focus:outline-none transition-colors"
-                  placeholder="0555 123 45 67"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm text-muted-foreground mb-2">Telefon *</label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 rounded-xl bg-muted/50 border border-border/50 text-foreground placeholder:text-muted-foreground focus:border-gold focus:outline-none transition-colors"
+                    placeholder="0555 123 45 67"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-muted-foreground mb-2">Kişi Sayısı</label>
+                  <input
+                    type="text"
+                    name="guestCount"
+                    value={formData.guestCount}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 rounded-xl bg-muted/50 border border-border/50 text-foreground placeholder:text-muted-foreground focus:border-gold focus:outline-none transition-colors"
+                    placeholder="Yaklaşık kişi sayısı"
+                  />
+                </div>
               </div>
 
-              <div>
-                <label className="block text-sm text-muted-foreground mb-2">Etkinlik Türü</label>
-                <select className="w-full px-4 py-3 rounded-xl bg-muted/50 border border-border/50 text-foreground focus:border-gold focus:outline-none transition-colors">
-                  <option value="">Seçiniz</option>
-                  <option value="dugun">Teknede Düğün</option>
-                  <option value="nisan">Nişan & Evlilik Teklifi</option>
-                  <option value="kina">Teknede Kına</option>
-                  <option value="ozel">Özel Etkinlik</option>
-                </select>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm text-muted-foreground mb-2">Etkinlik Türü *</label>
+                  <select 
+                    name="eventType"
+                    value={formData.eventType}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 rounded-xl bg-muted/50 border border-border/50 text-foreground focus:border-gold focus:outline-none transition-colors"
+                    required
+                  >
+                    <option value="">Seçiniz</option>
+                    <option value="Teknede Düğün">Teknede Düğün</option>
+                    <option value="Nişan & Evlilik Teklifi">Nişan & Evlilik Teklifi</option>
+                    <option value="Teknede Kına">Teknede Kına</option>
+                    <option value="Özel Etkinlik">Özel Etkinlik</option>
+                    <option value="Kurumsal Etkinlik">Kurumsal Etkinlik</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm text-muted-foreground mb-2">Tarih</label>
+                  <input
+                    type="date"
+                    name="eventDate"
+                    value={formData.eventDate}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 rounded-xl bg-muted/50 border border-border/50 text-foreground focus:border-gold focus:outline-none transition-colors"
+                  />
+                </div>
               </div>
 
               <div>
                 <label className="block text-sm text-muted-foreground mb-2">Mesajınız</label>
                 <textarea
+                  name="message"
+                  value={formData.message}
+                  onChange={handleInputChange}
                   rows={4}
                   className="w-full px-4 py-3 rounded-xl bg-muted/50 border border-border/50 text-foreground placeholder:text-muted-foreground focus:border-gold focus:outline-none transition-colors resize-none"
                   placeholder="Etkinliğiniz hakkında bilgi verin..."
                 />
               </div>
 
-              <Button variant="hero" size="lg" className="w-full">
-                <Send className="w-5 h-5" />
-                <span>Teklif İsteyin</span>
+              <Button 
+                type="submit" 
+                variant="hero" 
+                size="lg" 
+                className="w-full"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <span>Gönderiliyor...</span>
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-5 h-5" />
+                    <span>Teklif İsteyin</span>
+                  </>
+                )}
               </Button>
             </form>
           </div>
