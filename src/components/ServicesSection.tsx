@@ -5,6 +5,7 @@ import { useState, useCallback } from "react";
 import weddingImage from "@/assets/service-wedding.jpg";
 import engagementImage from "@/assets/service-engagement.jpg";
 import hennaImage from "@/assets/service-henna.jpg";
+import { useQuoteModal } from "@/contexts/QuoteModalContext";
 
 const services = [
   {
@@ -61,6 +62,7 @@ const ITEMS_PER_PAGE = 3;
 
 const ServicesSection = () => {
   const [currentPage, setCurrentPage] = useState(0);
+  const { openModal } = useQuoteModal();
   const totalPages = Math.ceil(services.length / ITEMS_PER_PAGE);
   
   const currentServices = services.slice(
@@ -197,13 +199,15 @@ const ServicesSection = () => {
                     
                     {/* Buttons */}
                     <div className="flex gap-3">
-                      <Button variant="hero" size="sm" className="flex-1 group/btn">
+                      <Button variant="hero" size="sm" className="flex-1 group/btn" onClick={openModal}>
                         <span>Teklif Al</span>
                         <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
                       </Button>
-                      <Button variant="whatsapp" size="sm">
-                        <MessageCircle className="w-4 h-4" />
-                        <span>WhatsApp</span>
+                      <Button variant="whatsapp" size="sm" asChild>
+                        <a href="https://wa.me/905551234567" target="_blank" rel="noopener noreferrer">
+                          <MessageCircle className="w-4 h-4" />
+                          <span>WhatsApp</span>
+                        </a>
                       </Button>
                     </div>
                   </div>

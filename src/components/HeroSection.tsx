@@ -3,9 +3,11 @@ import { Button } from "@/components/ui/button";
 import { ChevronDown, Sparkles, Play } from "lucide-react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import heroImage from "@/assets/hero-selamet-kadir.jpg";
+import { useQuoteModal } from "@/contexts/QuoteModalContext";
 
 const HeroSection = () => {
   const ref = useRef<HTMLElement>(null);
+  const { openModal } = useQuoteModal();
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start start", "end start"],
@@ -130,7 +132,7 @@ const HeroSection = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
           >
-            <Button variant="hero" size="xl" className="group">
+            <Button variant="hero" size="xl" className="group" onClick={openModal}>
               <span>Hemen Teklif Alın</span>
               <motion.span
                 className="ml-2"
