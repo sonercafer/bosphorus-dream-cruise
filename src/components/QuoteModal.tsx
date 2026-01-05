@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -8,10 +7,11 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { X, Send, Loader2, Sparkles } from "lucide-react";
+import { Send, Loader2, Sparkles, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
+import { useQuoteModal } from "@/contexts/QuoteModalContext";
 
 const quoteSchema = z.object({
   name: z.string().trim().min(2, "Ad en az 2 karakter olmalı").max(100, "Ad çok uzun"),
@@ -25,14 +25,15 @@ const quoteSchema = z.object({
 
 type QuoteFormData = z.infer<typeof quoteSchema>;
 
-interface QuoteModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}
+const RATE_LIMIT_KEY = "quote_submissions";
+const RATE_LIMIT_DURATION = 60 * 60 * 1000; // 1 hour in ms
+const MAX_SUBMISSIONS = 3;
 
-const QuoteModal = ({ open, onOpenChange }: QuoteModalProps) => {
+const QuoteModal = () => {
+  const { isOpen, closeModal } = useQuoteModal();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [remainingSubmissions, setRemainingSubmissions] = useState(MAX_SUBMISSIONS);
   const [formData, setFormData] = useState<QuoteFormData>({
     name: "",
     email: "",
@@ -43,6 +44,57 @@ const QuoteModal = ({ open, onOpenChange }: QuoteModalProps) => {
     message: "",
   });
 
+  // Check rate limit on mount and when modal opens
+  const checkRateLimit = useCallback(() => {
+    const stored = localStorage.getItem(RATE_LIMIT_KEY);
+    if (stored) {
+      const { submissions, timestamp } = JSON.parse(stored);
+      const now = Date.now();
+      
+      // Reset if duration has passed
+      if (now - timestamp > RATE_LIMIT_DURATION) {
+        localStorage.removeItem(RATE_LIMIT_KEY);
+        setRemainingSubmissions(MAX_SUBMISSIONS);
+        return MAX_SUBMISSIONS;
+      }
+      
+      const remaining = MAX_SUBMISSIONS - submissions;
+      setRemainingSubmissions(remaining);
+      return remaining;
+    }
+    setRemainingSubmissions(MAX_SUBMISSIONS);
+    return MAX_SUBMISSIONS;
+  }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      checkRateLimit();
+    }
+  }, [isOpen, checkRateLimit]);
+
+  const recordSubmission = () => {
+    const stored = localStorage.getItem(RATE_LIMIT_KEY);
+    const now = Date.now();
+    
+    if (stored) {
+      const { submissions, timestamp } = JSON.parse(stored);
+      if (now - timestamp < RATE_LIMIT_DURATION) {
+        localStorage.setItem(RATE_LIMIT_KEY, JSON.stringify({
+          submissions: submissions + 1,
+          timestamp,
+        }));
+        setRemainingSubmissions(MAX_SUBMISSIONS - submissions - 1);
+        return;
+      }
+    }
+    
+    localStorage.setItem(RATE_LIMIT_KEY, JSON.stringify({
+      submissions: 1,
+      timestamp: now,
+    }));
+    setRemainingSubmissions(MAX_SUBMISSIONS - 1);
+  };
+
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
@@ -52,6 +104,17 @@ const QuoteModal = ({ open, onOpenChange }: QuoteModalProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Check rate limit
+    const remaining = checkRateLimit();
+    if (remaining <= 0) {
+      toast({
+        title: "Limit Aşıldı",
+        description: "Çok fazla teklif talebi gönderdiniz. Lütfen 1 saat sonra tekrar deneyin.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     const validation = quoteSchema.safeParse(formData);
     if (!validation.success) {
@@ -73,6 +136,8 @@ const QuoteModal = ({ open, onOpenChange }: QuoteModalProps) => {
 
       if (error) throw error;
 
+      recordSubmission();
+
       toast({
         title: "Başarılı!",
         description: "Teklif talebiniz alındı. En kısa sürede sizinle iletişime geçeceğiz.",
@@ -88,7 +153,7 @@ const QuoteModal = ({ open, onOpenChange }: QuoteModalProps) => {
         message: "",
       });
       
-      onOpenChange(false);
+      closeModal();
     } catch (error) {
       console.error("Error submitting form:", error);
       toast({
@@ -102,37 +167,49 @@ const QuoteModal = ({ open, onOpenChange }: QuoteModalProps) => {
   };
 
   const inputClasses =
-    "w-full px-4 py-3 rounded-xl bg-muted/50 border border-border/50 text-foreground placeholder:text-muted-foreground focus:border-gold focus:ring-1 focus:ring-gold/50 focus:outline-none transition-all";
+    "w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl bg-muted/50 border border-border/50 text-foreground text-sm sm:text-base placeholder:text-muted-foreground focus:border-gold focus:ring-1 focus:ring-gold/50 focus:outline-none transition-all";
+
+  const isRateLimited = remainingSubmissions <= 0;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] p-0 overflow-hidden bg-background border-gold/20">
+    <Dialog open={isOpen} onOpenChange={closeModal}>
+      <DialogContent className="w-[95vw] max-w-[600px] max-h-[90vh] overflow-y-auto p-0 bg-background border-gold/20">
         {/* Header with gradient */}
-        <div className="relative bg-gradient-to-r from-gold/20 via-gold/10 to-gold/20 px-6 pt-8 pb-6">
+        <div className="relative bg-gradient-to-r from-gold/20 via-gold/10 to-gold/20 px-4 sm:px-6 pt-6 sm:pt-8 pb-4 sm:pb-6">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,hsl(var(--gold)/0.3),transparent_50%)]" />
           <DialogHeader className="relative z-10">
             <div className="flex items-center gap-2 mb-2">
-              <Sparkles className="w-5 h-5 text-gold" />
-              <span className="text-gold text-sm font-medium uppercase tracking-widest">
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-gold" />
+              <span className="text-gold text-xs sm:text-sm font-medium uppercase tracking-widest">
                 Ücretsiz Teklif
               </span>
             </div>
-            <DialogTitle className="font-serif text-2xl md:text-3xl font-bold text-foreground">
+            <DialogTitle className="font-serif text-xl sm:text-2xl md:text-3xl font-bold text-foreground">
               Hayalinizdeki Etkinlik İçin
               <br />
               <span className="text-gradient-gold">Teklif Alın</span>
             </DialogTitle>
-            <DialogDescription className="text-muted-foreground mt-2">
+            <DialogDescription className="text-muted-foreground text-sm mt-2">
               Formu doldurun, size özel fiyat teklifimizi hemen gönderelim.
             </DialogDescription>
           </DialogHeader>
         </div>
 
+        {/* Rate limit warning */}
+        {isRateLimited && (
+          <div className="mx-4 sm:mx-6 mt-4 p-3 rounded-lg bg-destructive/10 border border-destructive/30 flex items-start gap-2">
+            <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-destructive">
+              Çok fazla teklif talebi gönderdiniz. Lütfen 1 saat sonra tekrar deneyin.
+            </p>
+          </div>
+        )}
+
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-3 sm:space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
-              <label className="block text-sm text-muted-foreground mb-2">
+              <label className="block text-xs sm:text-sm text-muted-foreground mb-1.5 sm:mb-2">
                 Ad Soyad *
               </label>
               <input
@@ -143,10 +220,11 @@ const QuoteModal = ({ open, onOpenChange }: QuoteModalProps) => {
                 className={inputClasses}
                 placeholder="Adınız Soyadınız"
                 required
+                disabled={isRateLimited}
               />
             </div>
             <div>
-              <label className="block text-sm text-muted-foreground mb-2">
+              <label className="block text-xs sm:text-sm text-muted-foreground mb-1.5 sm:mb-2">
                 E-posta *
               </label>
               <input
@@ -157,13 +235,14 @@ const QuoteModal = ({ open, onOpenChange }: QuoteModalProps) => {
                 className={inputClasses}
                 placeholder="ornek@email.com"
                 required
+                disabled={isRateLimited}
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
-              <label className="block text-sm text-muted-foreground mb-2">
+              <label className="block text-xs sm:text-sm text-muted-foreground mb-1.5 sm:mb-2">
                 Telefon *
               </label>
               <input
@@ -174,10 +253,11 @@ const QuoteModal = ({ open, onOpenChange }: QuoteModalProps) => {
                 className={inputClasses}
                 placeholder="0555 123 45 67"
                 required
+                disabled={isRateLimited}
               />
             </div>
             <div>
-              <label className="block text-sm text-muted-foreground mb-2">
+              <label className="block text-xs sm:text-sm text-muted-foreground mb-1.5 sm:mb-2">
                 Kişi Sayısı
               </label>
               <input
@@ -187,13 +267,14 @@ const QuoteModal = ({ open, onOpenChange }: QuoteModalProps) => {
                 onChange={handleInputChange}
                 className={inputClasses}
                 placeholder="Yaklaşık kişi sayısı"
+                disabled={isRateLimited}
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
-              <label className="block text-sm text-muted-foreground mb-2">
+              <label className="block text-xs sm:text-sm text-muted-foreground mb-1.5 sm:mb-2">
                 Etkinlik Türü *
               </label>
               <select
@@ -202,18 +283,20 @@ const QuoteModal = ({ open, onOpenChange }: QuoteModalProps) => {
                 onChange={handleInputChange}
                 className={inputClasses}
                 required
+                disabled={isRateLimited}
               >
                 <option value="">Seçiniz</option>
                 <option value="Teknede Düğün">Teknede Düğün</option>
                 <option value="Nişan & Evlilik Teklifi">Nişan & Evlilik Teklifi</option>
                 <option value="Teknede Kına">Teknede Kına</option>
                 <option value="Doğum Günü">Doğum Günü</option>
+                <option value="Baby Shower">Baby Shower</option>
                 <option value="Özel Etkinlik">Özel Etkinlik</option>
                 <option value="Kurumsal Etkinlik">Kurumsal Etkinlik</option>
               </select>
             </div>
             <div>
-              <label className="block text-sm text-muted-foreground mb-2">
+              <label className="block text-xs sm:text-sm text-muted-foreground mb-1.5 sm:mb-2">
                 Tarih
               </label>
               <input
@@ -222,12 +305,13 @@ const QuoteModal = ({ open, onOpenChange }: QuoteModalProps) => {
                 value={formData.eventDate}
                 onChange={handleInputChange}
                 className={inputClasses}
+                disabled={isRateLimited}
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm text-muted-foreground mb-2">
+            <label className="block text-xs sm:text-sm text-muted-foreground mb-1.5 sm:mb-2">
               Mesajınız
             </label>
             <textarea
@@ -237,6 +321,7 @@ const QuoteModal = ({ open, onOpenChange }: QuoteModalProps) => {
               rows={3}
               className={`${inputClasses} resize-none`}
               placeholder="Etkinliğiniz hakkında bilgi verin..."
+              disabled={isRateLimited}
             />
           </div>
 
@@ -245,7 +330,7 @@ const QuoteModal = ({ open, onOpenChange }: QuoteModalProps) => {
             variant="hero"
             size="lg"
             className="w-full mt-2"
-            disabled={isSubmitting}
+            disabled={isSubmitting || isRateLimited}
           >
             {isSubmitting ? (
               <>
@@ -260,8 +345,13 @@ const QuoteModal = ({ open, onOpenChange }: QuoteModalProps) => {
             )}
           </Button>
 
-          <p className="text-center text-xs text-muted-foreground mt-4">
+          <p className="text-center text-xs text-muted-foreground mt-3 sm:mt-4">
             Bilgileriniz gizli tutulacak ve sadece teklif hazırlamak için kullanılacaktır.
+            {!isRateLimited && remainingSubmissions < MAX_SUBMISSIONS && (
+              <span className="block mt-1 text-gold/80">
+                Kalan teklif hakkı: {remainingSubmissions}
+              </span>
+            )}
           </p>
         </form>
       </DialogContent>

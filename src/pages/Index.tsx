@@ -7,22 +7,27 @@ import TestimonialsSection from "@/components/TestimonialsSection";
 import ContactSection from "@/components/ContactSection";
 import Footer from "@/components/Footer";
 import FloatingWhatsApp from "@/components/FloatingWhatsApp";
+import QuoteModal from "@/components/QuoteModal";
+import { QuoteModalProvider } from "@/contexts/QuoteModalContext";
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main>
-        <HeroSection />
-        <ServicesSection />
-        <FeaturesSection />
-        <GallerySection />
-        <TestimonialsSection />
-        <ContactSection />
-      </main>
-      <Footer />
-      <FloatingWhatsApp />
-    </div>
+    <QuoteModalProvider>
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main>
+          <HeroSection />
+          <ServicesSection />
+          <FeaturesSection />
+          <GallerySection />
+          <TestimonialsSection />
+          <ContactSection />
+        </main>
+        <Footer />
+        <FloatingWhatsApp />
+        <QuoteModal />
+      </div>
+    </QuoteModalProvider>
   );
 };
 
