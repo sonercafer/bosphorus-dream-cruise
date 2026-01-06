@@ -61,6 +61,8 @@ const services = [
 const ServicesSection = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const { openModal } = useQuoteModal();
   
   // Detect mobile
@@ -86,6 +88,30 @@ const ServicesSection = () => {
   const goToNext = useCallback(() => {
     setCurrentPage((prev) => (prev === totalPages - 1 ? 0 : prev + 1));
   }, [totalPages]);
+
+  // Swipe handlers
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+    if (isLeftSwipe) {
+      goToNext();
+    } else if (isRightSwipe) {
+      goToPrevious();
+    }
+  };
 
   return (
     <section id="services" className="py-24 bg-background relative overflow-hidden">
@@ -155,6 +181,9 @@ const ServicesSection = () => {
               exit={{ opacity: 0, x: -50 }}
               transition={{ duration: 0.3 }}
               className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
+              onTouchStart={onTouchStart}
+              onTouchMove={onTouchMove}
+              onTouchEnd={onTouchEnd}
             >
               {currentServices.map((service, index) => (
                 <motion.div
