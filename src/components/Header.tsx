@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Phone, Anchor } from "lucide-react";
+import { Menu, X, Phone } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuoteModal } from "@/contexts/QuoteModalContext";
+import logoImage from "@/assets/logo.png";
 
 const navItems = [
   { label: "Anasayfa", href: "#home" },
@@ -45,9 +46,11 @@ const Header = () => {
             className="flex items-center gap-3 group"
             whileHover={{ scale: 1.02 }}
           >
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gold to-gold-light flex items-center justify-center shadow-gold transition-transform duration-300 group-hover:scale-110">
-              <Anchor className="w-6 h-6 text-primary-foreground" />
-            </div>
+            <img 
+              src={logoImage} 
+              alt="Selamet Kadir Logo" 
+              className="w-12 h-12 object-contain transition-transform duration-300 group-hover:scale-110"
+            />
             <div className="flex flex-col">
               <span className="text-lg font-serif font-semibold text-foreground">Selamet Kadir</span>
               <span className="text-xs text-muted-foreground tracking-wider uppercase">Davet Teknesi</span>
