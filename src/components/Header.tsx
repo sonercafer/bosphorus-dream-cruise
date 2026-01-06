@@ -49,7 +49,7 @@ const Header = () => {
             <img 
               src={logoImage} 
               alt="Selamet Kadir Davet Teknesi" 
-              className="h-14 w-auto object-contain transition-transform duration-300 group-hover:scale-105 brightness-0 invert"
+              className="h-16 md:h-20 w-auto object-contain transition-transform duration-300 group-hover:scale-105 brightness-0 invert"
             />
           </motion.a>
 

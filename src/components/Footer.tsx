@@ -1,4 +1,5 @@
-import { Anchor, Facebook, Instagram, Youtube, Phone, Mail } from "lucide-react";
+import { Facebook, Instagram, Youtube, Phone, Mail } from "lucide-react";
+import logoImage from "@/assets/logo-selamet.png";
 
 const Footer = () => {
   return (
@@ -7,15 +8,13 @@ const Footer = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12">
           {/* Brand */}
           <div className="lg:col-span-2">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gold to-gold-light flex items-center justify-center shadow-gold">
-                <Anchor className="w-6 h-6 text-primary-foreground" />
-              </div>
-              <div>
-                <span className="text-lg font-serif font-semibold text-foreground">Selamet Kadir</span>
-                <span className="text-xs text-muted-foreground tracking-wider uppercase block">Davet Teknesi</span>
-              </div>
-            </div>
+            <a href="#home" className="inline-block mb-6">
+              <img 
+                src={logoImage} 
+                alt="Selamet Kadir Davet Teknesi" 
+                className="h-20 w-auto object-contain brightness-0 invert"
+              />
+            </a>
             <p className="text-muted-foreground max-w-md mb-6">
               15 yılı aşkın deneyimimizle İstanbul Boğazı'nda düğün, nişan, kına ve özel etkinliklerinizi 
               unutulmaz kılıyoruz.
