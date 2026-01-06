@@ -140,17 +140,17 @@ const ContactSection = () => {
             </div>
 
             {/* Quick Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button variant="hero" size="lg" className="flex-1" asChild>
-                <a href="tel:+905551234567">
-                  <Phone className="w-5 h-5" />
-                  <span>Hemen Arayın</span>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button variant="hero" size="lg" className="flex-1 min-w-0" asChild>
+                <a href="tel:+905551234567" className="flex items-center justify-center gap-2">
+                  <Phone className="w-5 h-5 shrink-0" />
+                  <span className="truncate">Hemen Arayın</span>
                 </a>
               </Button>
-              <Button variant="whatsapp" size="lg" className="flex-1" asChild>
-                <a href="https://wa.me/905551234567" target="_blank" rel="noopener noreferrer">
-                  <MessageCircle className="w-5 h-5" />
-                  <span>WhatsApp</span>
+              <Button variant="whatsapp" size="lg" className="flex-1 min-w-0" asChild>
+                <a href="https://wa.me/905551234567" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2">
+                  <MessageCircle className="w-5 h-5 shrink-0" />
+                  <span className="truncate">WhatsApp</span>
                 </a>
               </Button>
             </div>
