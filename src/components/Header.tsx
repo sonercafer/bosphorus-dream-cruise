@@ -31,7 +31,7 @@ const Header = () => {
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         isScrolled 
           ? "bg-background/95 backdrop-blur-xl border-b border-border/50 shadow-lg" 
-          : "bg-transparent"
+          : "bg-background/80 backdrop-blur-md"
       }`}
       initial={{ y: -100 }}
       animate={{ y: 0 }}
@@ -96,7 +96,7 @@ const Header = () => {
         <AnimatePresence>
           {isMenuOpen && (
             <motion.div 
-              className="lg:hidden py-4 border-t border-border/50"
+              className="lg:hidden py-4 border-t border-border/50 bg-background/95 backdrop-blur-xl -mx-4 px-4"
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}

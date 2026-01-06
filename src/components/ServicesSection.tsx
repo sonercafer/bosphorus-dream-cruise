@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { MessageCircle, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import weddingImage from "@/assets/service-wedding.jpg";
 import engagementImage from "@/assets/service-engagement.jpg";
 import hennaImage from "@/assets/service-henna.jpg";
@@ -58,16 +58,25 @@ const services = [
   },
 ];
 
-const ITEMS_PER_PAGE = 3;
-
 const ServicesSection = () => {
   const [currentPage, setCurrentPage] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
   const { openModal } = useQuoteModal();
-  const totalPages = Math.ceil(services.length / ITEMS_PER_PAGE);
+  
+  // Detect mobile
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  const itemsPerPage = isMobile ? 1 : 3;
+  const totalPages = Math.ceil(services.length / itemsPerPage);
   
   const currentServices = services.slice(
-    currentPage * ITEMS_PER_PAGE,
-    (currentPage + 1) * ITEMS_PER_PAGE
+    currentPage * itemsPerPage,
+    (currentPage + 1) * itemsPerPage
   );
 
   const goToPrevious = useCallback(() => {
