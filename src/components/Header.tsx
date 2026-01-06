@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, X, Phone } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuoteModal } from "@/contexts/QuoteModalContext";
-import logoImage from "@/assets/logo.png";
+import logoImage from "@/assets/logo-selamet.png";
 
 const navItems = [
   { label: "Anasayfa", href: "#home" },
@@ -43,18 +43,14 @@ const Header = () => {
           {/* Logo */}
           <motion.a 
             href="#home" 
-            className="flex items-center gap-3 group"
+            className="flex items-center group"
             whileHover={{ scale: 1.02 }}
           >
             <img 
               src={logoImage} 
-              alt="Selamet Kadir Logo" 
-              className="w-12 h-12 object-contain transition-transform duration-300 group-hover:scale-110"
+              alt="Selamet Kadir Davet Teknesi" 
+              className="h-14 w-auto object-contain transition-transform duration-300 group-hover:scale-105 brightness-0 invert"
             />
-            <div className="flex flex-col">
-              <span className="text-lg font-serif font-semibold text-foreground">Selamet Kadir</span>
-              <span className="text-xs text-muted-foreground tracking-wider uppercase">Davet Teknesi</span>
-            </div>
           </motion.a>
 
           {/* Desktop Navigation */}
