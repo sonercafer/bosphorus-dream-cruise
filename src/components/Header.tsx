@@ -8,6 +8,7 @@ import logoImage from "@/assets/logo-selamet.png";
 const navItems = [
   { label: "Anasayfa", href: "#home" },
   { label: "Hizmetlerimiz", href: "#services" },
+  { label: "Menüler", href: "#menu" },
   { label: "Teknemiz", href: "#about" },
   { label: "Galeri", href: "#gallery" },
   { label: "Referanslar", href: "#references" },
