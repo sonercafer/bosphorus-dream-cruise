@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { useQuoteModal } from "@/contexts/QuoteModalContext";
+import { menus } from "@/data/menus";
 
 const quoteSchema = z.object({
   name: z.string().trim().min(2, "Ad en az 2 karakter olmalı").max(100, "Ad çok uzun"),
@@ -20,6 +21,8 @@ const quoteSchema = z.object({
   eventType: z.string().min(1, "Etkinlik türü seçin"),
   eventDate: z.string().optional(),
   guestCount: z.string().optional(),
+  cateringOption: z.enum(["with-food", "without-food"]),
+  selectedMenu: z.string().optional(),
   message: z.string().max(1000, "Mesaj çok uzun").optional(),
 });
 
@@ -41,6 +44,8 @@ const QuoteModal = () => {
     eventType: "",
     eventDate: "",
     guestCount: "",
+    cateringOption: "without-food",
+    selectedMenu: "",
     message: "",
   });
 
@@ -99,7 +104,14 @@ const QuoteModal = () => {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => {
+      const newData = { ...prev, [name]: value };
+      // Reset selectedMenu when switching to without-food
+      if (name === "cateringOption" && value === "without-food") {
+        newData.selectedMenu = "";
+      }
+      return newData;
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -150,6 +162,8 @@ const QuoteModal = () => {
         eventType: "",
         eventDate: "",
         guestCount: "",
+        cateringOption: "without-food",
+        selectedMenu: "",
         message: "",
       });
       
@@ -309,6 +323,77 @@ const QuoteModal = () => {
               />
             </div>
           </div>
+
+          {/* Catering Options */}
+          <div>
+            <label className="block text-xs sm:text-sm text-muted-foreground mb-1.5 sm:mb-2">
+              Yemek Seçeneği *
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              <label 
+                className={`flex items-center justify-center p-3 rounded-xl border cursor-pointer transition-all ${
+                  formData.cateringOption === "without-food" 
+                    ? "border-gold bg-gold/10 text-gold" 
+                    : "border-border/50 bg-muted/30 text-muted-foreground hover:border-gold/50"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="cateringOption"
+                  value="without-food"
+                  checked={formData.cateringOption === "without-food"}
+                  onChange={handleInputChange}
+                  className="sr-only"
+                  disabled={isRateLimited}
+                />
+                <span className="text-sm font-medium">🚢 Yemeksiz</span>
+              </label>
+              <label 
+                className={`flex items-center justify-center p-3 rounded-xl border cursor-pointer transition-all ${
+                  formData.cateringOption === "with-food" 
+                    ? "border-gold bg-gold/10 text-gold" 
+                    : "border-border/50 bg-muted/30 text-muted-foreground hover:border-gold/50"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="cateringOption"
+                  value="with-food"
+                  checked={formData.cateringOption === "with-food"}
+                  onChange={handleInputChange}
+                  className="sr-only"
+                  disabled={isRateLimited}
+                />
+                <span className="text-sm font-medium">🍽️ Yemekli</span>
+              </label>
+            </div>
+          </div>
+
+          {/* Menu Selection - Only shown when with-food is selected */}
+          {formData.cateringOption === "with-food" && (
+            <div>
+              <label className="block text-xs sm:text-sm text-muted-foreground mb-1.5 sm:mb-2">
+                Menü Seçimi
+              </label>
+              <select
+                name="selectedMenu"
+                value={formData.selectedMenu}
+                onChange={handleInputChange}
+                className={inputClasses}
+                disabled={isRateLimited}
+              >
+                <option value="">Menü Seçiniz</option>
+                {menus.map((menu) => (
+                  <option key={menu.id} value={menu.id}>
+                    {menu.icon} {menu.title}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-muted-foreground mt-1">
+                Menü detaylarını görmek için <a href="#menu" className="text-gold hover:underline" onClick={closeModal}>Menüler</a> bölümünü ziyaret edin.
+              </p>
+            </div>
+          )}
 
           <div>
             <label className="block text-xs sm:text-sm text-muted-foreground mb-1.5 sm:mb-2">
