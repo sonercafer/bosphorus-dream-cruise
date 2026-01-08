@@ -4,6 +4,7 @@ import { Phone, Mail, MapPin, MessageCircle, Send, Loader2 } from "lucide-react"
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
+import { menus } from "@/data/menus";
 
 const quoteSchema = z.object({
   name: z.string().trim().min(2, "Ad en az 2 karakter olmalı").max(100, "Ad çok uzun"),
@@ -12,6 +13,8 @@ const quoteSchema = z.object({
   eventType: z.string().min(1, "Etkinlik türü seçin"),
   eventDate: z.string().optional(),
   guestCount: z.string().optional(),
+  cateringOption: z.enum(["yemeksiz", "yemekli"]),
+  selectedMenu: z.string().optional(),
   message: z.string().max(1000, "Mesaj çok uzun").optional(),
 });
 
@@ -27,12 +30,18 @@ const ContactSection = () => {
     eventType: "",
     eventDate: "",
     guestCount: "",
+    cateringOption: "yemeksiz",
+    selectedMenu: "",
     message: "",
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    if (name === "cateringOption" && value === "yemeksiz") {
+      setFormData(prev => ({ ...prev, [name]: value, selectedMenu: "" }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -72,6 +81,8 @@ const ContactSection = () => {
         eventType: "",
         eventDate: "",
         guestCount: "",
+        cateringOption: "yemeksiz",
+        selectedMenu: "",
         message: "",
       });
     } catch (error) {
@@ -244,6 +255,55 @@ const ContactSection = () => {
                   />
                 </div>
               </div>
+
+              {/* Yemek Seçeneği */}
+              <div>
+                <label className="block text-sm text-muted-foreground mb-2">Yemek Seçeneği</label>
+                <div className="flex gap-4">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="cateringOption"
+                      value="yemeksiz"
+                      checked={formData.cateringOption === "yemeksiz"}
+                      onChange={handleInputChange}
+                      className="w-4 h-4 accent-gold"
+                    />
+                    <span className="text-foreground">Yemeksiz</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="cateringOption"
+                      value="yemekli"
+                      checked={formData.cateringOption === "yemekli"}
+                      onChange={handleInputChange}
+                      className="w-4 h-4 accent-gold"
+                    />
+                    <span className="text-foreground">Yemekli</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Menü Seçimi - Sadece yemekli seçildiğinde görünür */}
+              {formData.cateringOption === "yemekli" && (
+                <div>
+                  <label className="block text-sm text-muted-foreground mb-2">Menü Seçimi</label>
+                  <select
+                    name="selectedMenu"
+                    value={formData.selectedMenu}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 rounded-xl bg-muted/50 border border-border/50 text-foreground focus:border-gold focus:outline-none transition-colors"
+                  >
+                    <option value="">Menü Seçiniz</option>
+                    {menus.map((menu) => (
+                      <option key={menu.id} value={menu.title}>
+                        {menu.title} - {menu.price}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm text-muted-foreground mb-2">Mesajınız</label>
