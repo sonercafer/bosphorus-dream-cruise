@@ -9,6 +9,7 @@ import Footer from "@/components/Footer";
 import FloatingWhatsApp from "@/components/FloatingWhatsApp";
 import QuoteModal from "@/components/QuoteModal";
 import { QuoteModalProvider } from "@/contexts/QuoteModalContext";
+import boatHeroImage from "@/assets/boat-hero.jpg";
 
 // Tekne özellikleri
 const boatSpecs = [
@@ -70,7 +71,7 @@ const BoatPageContent = () => {
       <section className="relative min-h-[70vh] flex items-center justify-center overflow-hidden pt-20">
         <div className="absolute inset-0">
           <img 
-            src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=1920&q=80" 
+            src={boatHeroImage} 
             alt="Selamet Kadir Davet Teknesi" 
             className="w-full h-full object-cover"
           />
