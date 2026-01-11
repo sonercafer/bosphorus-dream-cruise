@@ -13,6 +13,8 @@ interface QuoteRequest {
   eventType: string;
   eventDate: string;
   guestCount: string;
+  cateringOption: string;
+  selectedMenu: string;
   message: string;
 }
 
@@ -52,6 +54,13 @@ serve(async (req) => {
       },
     });
 
+    // Format catering option for display
+    const cateringDisplay = data.cateringOption === 'with-food' || data.cateringOption === 'yemekli' 
+      ? 'Yemekli' 
+      : 'Yemeksiz';
+    
+    const menuDisplay = data.selectedMenu || 'Belirtilmedi';
+
     // Email content for the business owner
     const ownerEmailContent = `
 <!DOCTYPE html>
@@ -66,6 +75,7 @@ serve(async (req) => {
     .label { font-weight: bold; color: #0a1628; }
     .value { color: #555; }
     .footer { text-align: center; margin-top: 20px; color: #888; font-size: 12px; }
+    .highlight { background: #fff3e0; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #d4a574; }
   </style>
 </head>
 <body>
@@ -98,6 +108,18 @@ serve(async (req) => {
         <span class="label">Kişi Sayısı:</span>
         <span class="value">${data.guestCount || 'Belirtilmedi'}</span>
       </div>
+      <div class="highlight">
+        <div class="field">
+          <span class="label">🍽️ Yemek Seçeneği:</span>
+          <span class="value">${cateringDisplay}</span>
+        </div>
+        ${cateringDisplay === 'Yemekli' ? `
+        <div class="field">
+          <span class="label">📋 Seçilen Menü:</span>
+          <span class="value">${menuDisplay}</span>
+        </div>
+        ` : ''}
+      </div>
       <div class="field">
         <span class="label">Mesaj:</span>
         <p class="value">${data.message || 'Mesaj yok'}</p>
@@ -122,6 +144,7 @@ serve(async (req) => {
     .header { background: linear-gradient(135deg, #0a1628 0%, #1a2d4a 100%); color: #d4a574; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
     .content { background: #f9f9f9; padding: 20px; border-radius: 0 0 8px 8px; }
     .footer { text-align: center; margin-top: 20px; color: #888; font-size: 12px; }
+    .highlight { background: #fff3e0; padding: 10px 15px; border-radius: 8px; margin: 10px 0; }
   </style>
 </head>
 <body>
@@ -137,6 +160,8 @@ serve(async (req) => {
         <li><strong>Etkinlik:</strong> ${data.eventType}</li>
         <li><strong>Tarih:</strong> ${data.eventDate || 'Belirtilmedi'}</li>
         <li><strong>Kişi Sayısı:</strong> ${data.guestCount || 'Belirtilmedi'}</li>
+        <li><strong>Yemek Seçeneği:</strong> ${cateringDisplay}</li>
+        ${cateringDisplay === 'Yemekli' && menuDisplay !== 'Belirtilmedi' ? `<li><strong>Seçilen Menü:</strong> ${menuDisplay}</li>` : ''}
       </ul>
       <p>Bizi tercih ettiğiniz için teşekkür ederiz!</p>
     </div>
