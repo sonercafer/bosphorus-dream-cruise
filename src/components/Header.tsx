@@ -3,22 +3,25 @@ import { Button } from "@/components/ui/button";
 import { Menu, X, Phone } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuoteModal } from "@/contexts/QuoteModalContext";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import logoImage from "@/assets/logo-selamet.png";
 
 const navItems = [
-  { label: "Anasayfa", href: "#home" },
-  { label: "Hizmetlerimiz", href: "#services" },
-  { label: "Menüler", href: "#menu" },
-  { label: "Teknemiz", href: "#about" },
-  { label: "Galeri", href: "#gallery" },
-  { label: "Referanslar", href: "#references" },
-  { label: "İletişim", href: "#contact" },
+  { label: "Anasayfa", href: "#home", isExternal: false },
+  { label: "Hizmetlerimiz", href: "#services", isExternal: false },
+  { label: "Menüler", href: "#menu", isExternal: false },
+  { label: "Teknemiz", href: "/teknemiz", isExternal: true },
+  { label: "Galeri", href: "#gallery", isExternal: false },
+  { label: "Referanslar", href: "#references", isExternal: false },
+  { label: "İletişim", href: "#contact", isExternal: false },
 ];
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const { openModal } = useQuoteModal();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -27,6 +30,31 @@ const Header = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, item: typeof navItems[0]) => {
+    if (item.isExternal) {
+      // External page link - let the Link component handle it
+      return;
+    }
+    
+    e.preventDefault();
+    
+    if (location.pathname !== "/") {
+      // Navigate to home page first, then scroll
+      navigate("/");
+      setTimeout(() => {
+        const element = document.querySelector(item.href);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+    } else {
+      const element = document.querySelector(item.href);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
 
   return (
     <motion.header 
@@ -42,31 +70,43 @@ const Header = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <motion.a 
-            href="#home" 
+          <Link 
+            to="/" 
             className="flex items-center group"
-            whileHover={{ scale: 1.02 }}
           >
-            <img 
+            <motion.img 
               src={logoImage} 
               alt="Selamet Kadir Davet Teknesi" 
               className="h-20 md:h-28 w-auto object-contain transition-transform duration-300 group-hover:scale-105 brightness-0 invert"
+              whileHover={{ scale: 1.02 }}
             />
-          </motion.a>
+          </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-8">
             {navItems.map((item, index) => (
-              <motion.a
-                key={item.label}
-                href={item.href}
-                className="text-sm font-medium text-muted-foreground hover:text-gold transition-colors duration-300 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-gold after:transition-all after:duration-300 hover:after:w-full"
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-              >
-                {item.label}
-              </motion.a>
+              item.isExternal ? (
+                <motion.div key={item.label}>
+                  <Link
+                    to={item.href}
+                    className="text-sm font-medium text-muted-foreground hover:text-gold transition-colors duration-300 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-gold after:transition-all after:duration-300 hover:after:w-full"
+                  >
+                    {item.label}
+                  </Link>
+                </motion.div>
+              ) : (
+                <motion.a
+                  key={item.label}
+                  href={item.href}
+                  onClick={(e) => handleNavClick(e, item)}
+                  className="text-sm font-medium text-muted-foreground hover:text-gold transition-colors duration-300 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-gold after:transition-all after:duration-300 hover:after:w-full"
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  {item.label}
+                </motion.a>
+              )
             ))}
           </nav>
 
@@ -103,24 +143,32 @@ const Header = () => {
             >
               <nav className="flex flex-col gap-4">
                 {navItems.map((item, index) => (
-                  <motion.a
-                    key={item.label}
-                    href={item.href}
-                    className="text-base font-medium text-foreground hover:text-gold transition-colors py-2"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setIsMenuOpen(false);
-                      const element = document.querySelector(item.href);
-                      if (element) {
-                        element.scrollIntoView({ behavior: 'smooth' });
-                      }
-                    }}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                  >
-                    {item.label}
-                  </motion.a>
+                  item.isExternal ? (
+                    <motion.div key={item.label}>
+                      <Link
+                        to={item.href}
+                        className="text-base font-medium text-foreground hover:text-gold transition-colors py-2 block"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        {item.label}
+                      </Link>
+                    </motion.div>
+                  ) : (
+                    <motion.a
+                      key={item.label}
+                      href={item.href}
+                      className="text-base font-medium text-foreground hover:text-gold transition-colors py-2"
+                      onClick={(e) => {
+                        setIsMenuOpen(false);
+                        handleNavClick(e, item);
+                      }}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                    >
+                      {item.label}
+                    </motion.a>
+                  )
                 ))}
                 <Button 
                   variant="hero" 
