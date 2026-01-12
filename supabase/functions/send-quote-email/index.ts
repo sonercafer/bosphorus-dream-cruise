@@ -61,117 +61,93 @@ serve(async (req) => {
     
     const menuDisplay = data.selectedMenu || 'Belirtilmedi';
 
+    // Build menu section HTML separately
+    const menuSection = cateringDisplay === 'Yemekli' 
+      ? `<div class="field"><span class="label">📋 Seçilen Menü:</span> <span class="value">${menuDisplay}</span></div>` 
+      : '';
+
     // Email content for the business owner
-    const ownerEmailContent = `
-<!DOCTYPE html>
+    const ownerEmailContent = `<!DOCTYPE html>
 <html>
 <head>
-  <style>
-    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-    .header { background: linear-gradient(135deg, #0a1628 0%, #1a2d4a 100%); color: #d4a574; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
-    .content { background: #f9f9f9; padding: 20px; border-radius: 0 0 8px 8px; }
-    .field { margin-bottom: 15px; }
-    .label { font-weight: bold; color: #0a1628; }
-    .value { color: #555; }
-    .footer { text-align: center; margin-top: 20px; color: #888; font-size: 12px; }
-    .highlight { background: #fff3e0; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #d4a574; }
-  </style>
+<style>
+body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+.container { max-width: 600px; margin: 0 auto; padding: 20px; }
+.header { background: linear-gradient(135deg, #0a1628 0%, #1a2d4a 100%); color: #d4a574; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+.content { background: #f9f9f9; padding: 20px; border-radius: 0 0 8px 8px; }
+.field { margin-bottom: 15px; }
+.label { font-weight: bold; color: #0a1628; }
+.value { color: #555; }
+.footer { text-align: center; margin-top: 20px; color: #888; font-size: 12px; }
+.highlight { background: #fff3e0; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #d4a574; }
+</style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <h1>🚢 Yeni Teklif Talebi</h1>
-    </div>
-    <div class="content">
-      <div class="field">
-        <span class="label">Ad Soyad:</span>
-        <span class="value">${data.name}</span>
-      </div>
-      <div class="field">
-        <span class="label">E-posta:</span>
-        <span class="value">${data.email}</span>
-      </div>
-      <div class="field">
-        <span class="label">Telefon:</span>
-        <span class="value">${data.phone}</span>
-      </div>
-      <div class="field">
-        <span class="label">Etkinlik Türü:</span>
-        <span class="value">${data.eventType}</span>
-      </div>
-      <div class="field">
-        <span class="label">Tarih:</span>
-        <span class="value">${data.eventDate || 'Belirtilmedi'}</span>
-      </div>
-      <div class="field">
-        <span class="label">Kişi Sayısı:</span>
-        <span class="value">${data.guestCount || 'Belirtilmedi'}</span>
-      </div>
-      <div class="highlight">
-        <div class="field">
-          <span class="label">🍽️ Yemek Seçeneği:</span>
-          <span class="value">${cateringDisplay}</span>
-        </div>
-        ${cateringDisplay === 'Yemekli' ? `
-        <div class="field">
-          <span class="label">📋 Seçilen Menü:</span>
-          <span class="value">${menuDisplay}</span>
-        </div>
-        ` : ''}
-      </div>
-      <div class="field">
-        <span class="label">Mesaj:</span>
-        <p class="value">${data.message || 'Mesaj yok'}</p>
-      </div>
-    </div>
-    <div class="footer">
-      <p>Bu talep web siteniz üzerinden gönderilmiştir.</p>
-    </div>
-  </div>
+<div class="container">
+<div class="header">
+<h1>🚢 Yeni Teklif Talebi</h1>
+</div>
+<div class="content">
+<div class="field"><span class="label">Ad Soyad:</span> <span class="value">${data.name}</span></div>
+<div class="field"><span class="label">E-posta:</span> <span class="value">${data.email}</span></div>
+<div class="field"><span class="label">Telefon:</span> <span class="value">${data.phone}</span></div>
+<div class="field"><span class="label">Etkinlik Türü:</span> <span class="value">${data.eventType}</span></div>
+<div class="field"><span class="label">Tarih:</span> <span class="value">${data.eventDate || 'Belirtilmedi'}</span></div>
+<div class="field"><span class="label">Kişi Sayısı:</span> <span class="value">${data.guestCount || 'Belirtilmedi'}</span></div>
+<div class="highlight">
+<div class="field"><span class="label">🍽️ Yemek Seçeneği:</span> <span class="value">${cateringDisplay}</span></div>
+${menuSection}
+</div>
+<div class="field"><span class="label">Mesaj:</span> <p class="value">${data.message || 'Mesaj yok'}</p></div>
+</div>
+<div class="footer">
+<p>Bu talep web siteniz üzerinden gönderilmiştir.</p>
+</div>
+</div>
 </body>
-</html>
-    `;
+</html>`;
+
+    // Build customer menu line separately
+    const customerMenuLine = (cateringDisplay === 'Yemekli' && menuDisplay !== 'Belirtilmedi') 
+      ? `<li><strong>Seçilen Menü:</strong> ${menuDisplay}</li>` 
+      : '';
 
     // Email content for the customer (confirmation)
-    const customerEmailContent = `
-<!DOCTYPE html>
+    const customerEmailContent = `<!DOCTYPE html>
 <html>
 <head>
-  <style>
-    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-    .header { background: linear-gradient(135deg, #0a1628 0%, #1a2d4a 100%); color: #d4a574; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
-    .content { background: #f9f9f9; padding: 20px; border-radius: 0 0 8px 8px; }
-    .footer { text-align: center; margin-top: 20px; color: #888; font-size: 12px; }
-    .highlight { background: #fff3e0; padding: 10px 15px; border-radius: 8px; margin: 10px 0; }
-  </style>
+<style>
+body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+.container { max-width: 600px; margin: 0 auto; padding: 20px; }
+.header { background: linear-gradient(135deg, #0a1628 0%, #1a2d4a 100%); color: #d4a574; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+.content { background: #f9f9f9; padding: 20px; border-radius: 0 0 8px 8px; }
+.footer { text-align: center; margin-top: 20px; color: #888; font-size: 12px; }
+</style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <h1>🚢 Talebiniz Alındı</h1>
-    </div>
-    <div class="content">
-      <p>Sayın ${data.name},</p>
-      <p>Teklif talebiniz başarıyla alınmıştır. En kısa sürede sizinle iletişime geçeceğiz.</p>
-      <p><strong>Talep Özeti:</strong></p>
-      <ul>
-        <li><strong>Etkinlik:</strong> ${data.eventType}</li>
-        <li><strong>Tarih:</strong> ${data.eventDate || 'Belirtilmedi'}</li>
-        <li><strong>Kişi Sayısı:</strong> ${data.guestCount || 'Belirtilmedi'}</li>
-        <li><strong>Yemek Seçeneği:</strong> ${cateringDisplay}</li>
-        ${cateringDisplay === 'Yemekli' && menuDisplay !== 'Belirtilmedi' ? `<li><strong>Seçilen Menü:</strong> ${menuDisplay}</li>` : ''}
-      </ul>
-      <p>Bizi tercih ettiğiniz için teşekkür ederiz!</p>
-    </div>
-    <div class="footer">
-      <p>İstanbul Boğazı'nda Unutulmaz Anılar</p>
-    </div>
-  </div>
+<div class="container">
+<div class="header">
+<h1>🚢 Talebiniz Alındı</h1>
+</div>
+<div class="content">
+<p>Sayın ${data.name},</p>
+<p>Teklif talebiniz başarıyla alınmıştır. En kısa sürede sizinle iletişime geçeceğiz.</p>
+<p><strong>Talep Özeti:</strong></p>
+<ul>
+<li><strong>Etkinlik:</strong> ${data.eventType}</li>
+<li><strong>Tarih:</strong> ${data.eventDate || 'Belirtilmedi'}</li>
+<li><strong>Kişi Sayısı:</strong> ${data.guestCount || 'Belirtilmedi'}</li>
+<li><strong>Yemek Seçeneği:</strong> ${cateringDisplay}</li>
+${customerMenuLine}
+</ul>
+<p>Bizi tercih ettiğiniz için teşekkür ederiz!</p>
+</div>
+<div class="footer">
+<p>İstanbul Boğazı'nda Unutulmaz Anılar</p>
+</div>
+</div>
 </body>
-</html>
-    `;
+</html>`;
 
     // Send email to business owner
     console.log('Sending email to business owner...');
