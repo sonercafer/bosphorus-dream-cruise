@@ -31,28 +31,40 @@ const Header = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, item: typeof navItems[0]) => {
+  const scrollToElement = (hash: string) => {
+    const element = document.querySelector(hash);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, item: typeof navItems[0], closeMobileMenu = false) => {
     if (item.isExternal) {
-      // External page link - let the Link component handle it
+      // External page link - close menu but let Link handle navigation
+      if (closeMobileMenu) {
+        setIsMenuOpen(false);
+      }
       return;
     }
     
     e.preventDefault();
+
+    // Close mobile menu first if needed
+    if (closeMobileMenu) {
+      setIsMenuOpen(false);
+    }
     
     if (location.pathname !== "/") {
-      // Navigate to home page first, then scroll
+      // Navigate to home page first, then scroll after a short delay
       navigate("/");
       setTimeout(() => {
-        const element = document.querySelector(item.href);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
-        }
-      }, 100);
+        scrollToElement(item.href);
+      }, 150);
     } else {
-      const element = document.querySelector(item.href);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
+      // Small delay to allow menu animation to complete on mobile
+      setTimeout(() => {
+        scrollToElement(item.href);
+      }, closeMobileMenu ? 100 : 0);
     }
   };
 
@@ -98,7 +110,7 @@ const Header = () => {
                 <motion.a
                   key={item.label}
                   href={item.href}
-                  onClick={(e) => handleNavClick(e, item)}
+                  onClick={(e) => handleNavClick(e, item, false)}
                   className="text-sm font-medium text-muted-foreground hover:text-gold transition-colors duration-300 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-gold after:transition-all after:duration-300 hover:after:w-full"
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -158,10 +170,7 @@ const Header = () => {
                       key={item.label}
                       href={item.href}
                       className="text-base font-medium text-foreground hover:text-gold transition-colors py-2"
-                      onClick={(e) => {
-                        setIsMenuOpen(false);
-                        handleNavClick(e, item);
-                      }}
+                      onClick={(e) => handleNavClick(e, item, true)}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.05 }}
