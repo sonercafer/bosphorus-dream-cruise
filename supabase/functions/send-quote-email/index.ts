@@ -18,6 +18,14 @@ interface QuoteRequest {
   message: string;
 }
 
+const escapeHtml = (value: string) =>
+  value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -58,95 +66,146 @@ serve(async (req) => {
     const cateringDisplay = data.cateringOption === 'with-food' || data.cateringOption === 'yemekli' 
       ? 'Yemekli' 
       : 'Yemeksiz';
-    
-    const menuDisplay = data.selectedMenu || 'Belirtilmedi';
 
-    // Build menu section HTML separately
-    const menuSection = cateringDisplay === 'Yemekli' 
-      ? `<div class="field"><span class="label">📋 Seçilen Menü:</span> <span class="value">${menuDisplay}</span></div>` 
+    // Map menu ids to readable titles (frontend sends ids like: klasik, premium, vip)
+    const menuTitleMap: Record<string, string> = {
+      klasik: 'Klasik Menü',
+      premium: 'Premium Menü',
+      vip: 'VIP Menü',
+    };
+
+    const rawMenu = (data.selectedMenu ?? '').trim();
+    const menuDisplayRaw = rawMenu ? (menuTitleMap[rawMenu] ?? rawMenu) : 'Belirtilmedi';
+
+    // Escape all user-controlled content before embedding into HTML
+    const safe = {
+      name: escapeHtml(data.name),
+      email: escapeHtml(data.email),
+      phone: escapeHtml(data.phone),
+      eventType: escapeHtml(data.eventType),
+      eventDate: escapeHtml(data.eventDate || 'Belirtilmedi'),
+      guestCount: escapeHtml(data.guestCount || 'Belirtilmedi'),
+      catering: escapeHtml(cateringDisplay),
+      menu: escapeHtml(menuDisplayRaw),
+      messageHtml: escapeHtml(data.message || 'Mesaj yok').replace(/\r?\n/g, '<br />'),
+    };
+
+    const includeMenu = cateringDisplay === 'Yemekli' && rawMenu.length > 0;
+
+    const ownerMenuRow = includeMenu
+      ? `
+        <tr>
+          <td style="padding:8px 0; font-weight:700; color:#0a1628; width:180px;">📋 Seçilen Menü</td>
+          <td style="padding:8px 0; color:#333;">${safe.menu}</td>
+        </tr>`
       : '';
 
-    // Email content for the business owner
-    const ownerEmailContent = `<!DOCTYPE html>
+    // Email content for the business owner (inline styles for maximum email-client compatibility)
+    const ownerEmailContent = `<!doctype html>
 <html>
-<head>
-<style>
-body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-.container { max-width: 600px; margin: 0 auto; padding: 20px; }
-.header { background: linear-gradient(135deg, #0a1628 0%, #1a2d4a 100%); color: #d4a574; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
-.content { background: #f9f9f9; padding: 20px; border-radius: 0 0 8px 8px; }
-.field { margin-bottom: 15px; }
-.label { font-weight: bold; color: #0a1628; }
-.value { color: #555; }
-.footer { text-align: center; margin-top: 20px; color: #888; font-size: 12px; }
-.highlight { background: #fff3e0; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #d4a574; }
-</style>
-</head>
-<body>
-<div class="container">
-<div class="header">
-<h1>🚢 Yeni Teklif Talebi</h1>
-</div>
-<div class="content">
-<div class="field"><span class="label">Ad Soyad:</span> <span class="value">${data.name}</span></div>
-<div class="field"><span class="label">E-posta:</span> <span class="value">${data.email}</span></div>
-<div class="field"><span class="label">Telefon:</span> <span class="value">${data.phone}</span></div>
-<div class="field"><span class="label">Etkinlik Türü:</span> <span class="value">${data.eventType}</span></div>
-<div class="field"><span class="label">Tarih:</span> <span class="value">${data.eventDate || 'Belirtilmedi'}</span></div>
-<div class="field"><span class="label">Kişi Sayısı:</span> <span class="value">${data.guestCount || 'Belirtilmedi'}</span></div>
-<div class="highlight">
-<div class="field"><span class="label">🍽️ Yemek Seçeneği:</span> <span class="value">${cateringDisplay}</span></div>
-${menuSection}
-</div>
-<div class="field"><span class="label">Mesaj:</span> <p class="value">${data.message || 'Mesaj yok'}</p></div>
-</div>
-<div class="footer">
-<p>Bu talep web siteniz üzerinden gönderilmiştir.</p>
-</div>
-</div>
-</body>
+  <body style="margin:0; padding:0; background:#f5f5f5;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;">
+      <tr>
+        <td align="center" style="padding:24px 12px;">
+          <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:600px; max-width:600px; background:#ffffff; border-radius:12px; overflow:hidden; font-family:Arial, sans-serif;">
+            <tr>
+              <td style="padding:18px 20px; background:#0a1628; color:#ffffff;">
+                <div style="font-size:18px; font-weight:700;">🚢 Yeni Teklif Talebi</div>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:18px 20px;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td style="padding:8px 0; font-weight:700; color:#0a1628; width:180px;">Ad Soyad</td>
+                    <td style="padding:8px 0; color:#333;">${safe.name}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:8px 0; font-weight:700; color:#0a1628;">E-posta</td>
+                    <td style="padding:8px 0; color:#333;">${safe.email}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:8px 0; font-weight:700; color:#0a1628;">Telefon</td>
+                    <td style="padding:8px 0; color:#333;">${safe.phone}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:8px 0; font-weight:700; color:#0a1628;">Etkinlik Türü</td>
+                    <td style="padding:8px 0; color:#333;">${safe.eventType}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:8px 0; font-weight:700; color:#0a1628;">Tarih</td>
+                    <td style="padding:8px 0; color:#333;">${safe.eventDate}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:8px 0; font-weight:700; color:#0a1628;">Kişi Sayısı</td>
+                    <td style="padding:8px 0; color:#333;">${safe.guestCount}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:8px 0; font-weight:700; color:#0a1628;">🍽️ Yemek Seçeneği</td>
+                    <td style="padding:8px 0; color:#333;">${safe.catering}</td>
+                  </tr>
+                  ${ownerMenuRow}
+                  <tr>
+                    <td style="padding:12px 0 6px; font-weight:700; color:#0a1628; vertical-align:top;">Mesaj</td>
+                    <td style="padding:12px 0 6px; color:#333;">${safe.messageHtml}</td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:14px 20px; background:#fafafa; color:#777; font-size:12px;">
+                Bu talep web siteniz üzerinden gönderilmiştir.
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
 </html>`;
 
-    // Build customer menu line separately
-    const customerMenuLine = (cateringDisplay === 'Yemekli' && menuDisplay !== 'Belirtilmedi') 
-      ? `<li><strong>Seçilen Menü:</strong> ${menuDisplay}</li>` 
+    const customerMenuLine = includeMenu
+      ? `<li><strong>Seçilen Menü:</strong> ${safe.menu}</li>`
       : '';
 
     // Email content for the customer (confirmation)
-    const customerEmailContent = `<!DOCTYPE html>
+    const customerEmailContent = `<!doctype html>
 <html>
-<head>
-<style>
-body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-.container { max-width: 600px; margin: 0 auto; padding: 20px; }
-.header { background: linear-gradient(135deg, #0a1628 0%, #1a2d4a 100%); color: #d4a574; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
-.content { background: #f9f9f9; padding: 20px; border-radius: 0 0 8px 8px; }
-.footer { text-align: center; margin-top: 20px; color: #888; font-size: 12px; }
-</style>
-</head>
-<body>
-<div class="container">
-<div class="header">
-<h1>🚢 Talebiniz Alındı</h1>
-</div>
-<div class="content">
-<p>Sayın ${data.name},</p>
-<p>Teklif talebiniz başarıyla alınmıştır. En kısa sürede sizinle iletişime geçeceğiz.</p>
-<p><strong>Talep Özeti:</strong></p>
-<ul>
-<li><strong>Etkinlik:</strong> ${data.eventType}</li>
-<li><strong>Tarih:</strong> ${data.eventDate || 'Belirtilmedi'}</li>
-<li><strong>Kişi Sayısı:</strong> ${data.guestCount || 'Belirtilmedi'}</li>
-<li><strong>Yemek Seçeneği:</strong> ${cateringDisplay}</li>
-${customerMenuLine}
-</ul>
-<p>Bizi tercih ettiğiniz için teşekkür ederiz!</p>
-</div>
-<div class="footer">
-<p>İstanbul Boğazı'nda Unutulmaz Anılar</p>
-</div>
-</div>
-</body>
+  <body style="margin:0; padding:0; background:#f5f5f5;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;">
+      <tr>
+        <td align="center" style="padding:24px 12px;">
+          <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:600px; max-width:600px; background:#ffffff; border-radius:12px; overflow:hidden; font-family:Arial, sans-serif;">
+            <tr>
+              <td style="padding:18px 20px; background:#0a1628; color:#ffffff;">
+                <div style="font-size:18px; font-weight:700;">🚢 Talebiniz Alındı</div>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:18px 20px; color:#333; line-height:1.6;">
+                <p style="margin:0 0 12px;">Sayın ${safe.name},</p>
+                <p style="margin:0 0 12px;">Teklif talebiniz başarıyla alınmıştır. En kısa sürede sizinle iletişime geçeceğiz.</p>
+                <p style="margin:0 0 8px;"><strong>Talep Özeti:</strong></p>
+                <ul style="margin:0; padding-left:18px;">
+                  <li><strong>Etkinlik:</strong> ${safe.eventType}</li>
+                  <li><strong>Tarih:</strong> ${safe.eventDate}</li>
+                  <li><strong>Kişi Sayısı:</strong> ${safe.guestCount}</li>
+                  <li><strong>Yemek Seçeneği:</strong> ${safe.catering}</li>
+                  ${customerMenuLine}
+                </ul>
+                <p style="margin:12px 0 0;">Bizi tercih ettiğiniz için teşekkür ederiz!</p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:14px 20px; background:#fafafa; color:#777; font-size:12px;">
+                İstanbul Boğazı'nda Unutulmaz Anılar
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
 </html>`;
 
     // Send email to business owner
