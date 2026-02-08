@@ -1,10 +1,55 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
+
+const RATE_LIMIT_MAX_REQUESTS = 5; // Max requests per hour
+const RATE_LIMIT_WINDOW_MS = 3600000; // 1 hour in milliseconds
+
+// Check rate limit by identifier (IP or email)
+async function checkRateLimit(supabase: ReturnType<typeof createClient>, identifier: string, identifierType: 'ip' | 'email'): Promise<{ allowed: boolean; count: number }> {
+  const oneHourAgo = new Date(Date.now() - RATE_LIMIT_WINDOW_MS).toISOString();
+  
+  // Count recent requests from this identifier
+  const { count, error } = await supabase
+    .from('rate_limits')
+    .select('*', { count: 'exact', head: true })
+    .eq('identifier', identifier)
+    .eq('identifier_type', identifierType)
+    .gte('created_at', oneHourAgo);
+
+  if (error) {
+    console.error('Rate limit check error:', error);
+    // On error, allow the request but log it
+    return { allowed: true, count: 0 };
+  }
+
+  return { allowed: (count ?? 0) < RATE_LIMIT_MAX_REQUESTS, count: count ?? 0 };
+}
+
+// Record a rate limit entry
+async function recordRateLimitEntry(supabase: ReturnType<typeof createClient>, identifier: string, identifierType: 'ip' | 'email'): Promise<void> {
+  const { error } = await supabase
+    .from('rate_limits')
+    .insert({ identifier, identifier_type: identifierType });
+
+  if (error) {
+    console.error('Rate limit record error:', error);
+  }
+}
+
+// Periodically clean up old rate limit entries
+async function cleanupOldRateLimits(supabase: ReturnType<typeof createClient>): Promise<void> {
+  try {
+    await supabase.rpc('cleanup_old_rate_limits');
+  } catch (error) {
+    console.error('Rate limit cleanup error:', error);
+  }
+}
 
 interface QuoteRequest {
   name: string;
@@ -33,6 +78,39 @@ serve(async (req) => {
   }
 
   try {
+    // Initialize Supabase client with service role for rate limiting
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('Supabase credentials not configured');
+      throw new Error('Service configuration error');
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Get client IP for rate limiting
+    const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 
+                     req.headers.get('x-real-ip') || 
+                     'unknown';
+    
+    // Check rate limit by IP
+    const { allowed: ipAllowed, count: ipCount } = await checkRateLimit(supabase, clientIp, 'ip');
+    
+    if (!ipAllowed) {
+      console.log(`Rate limit exceeded for IP: ${clientIp} (${ipCount} requests in last hour)`);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Çok fazla istek gönderdiniz. Lütfen daha sonra tekrar deneyin.' 
+        }),
+        { 
+          status: 429, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
     const gmailUser = Deno.env.get('GMAIL_USER');
     const gmailPassword = Deno.env.get('GMAIL_APP_PASSWORD');
 
@@ -42,11 +120,39 @@ serve(async (req) => {
     }
 
     const data: QuoteRequest = await req.json();
-    console.log('Received quote request:', { name: data.name, email: data.email, eventType: data.eventType });
+    console.log('Received quote request:', { name: data.name, email: data.email, eventType: data.eventType, ip: clientIp });
 
     // Validate required fields
     if (!data.name || !data.email || !data.phone || !data.eventType) {
       throw new Error('Missing required fields');
+    }
+
+    // Also check rate limit by email to prevent abuse from different IPs
+    const { allowed: emailAllowed, count: emailCount } = await checkRateLimit(supabase, data.email.toLowerCase(), 'email');
+    
+    if (!emailAllowed) {
+      console.log(`Rate limit exceeded for email: ${data.email} (${emailCount} requests in last hour)`);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Bu e-posta adresi için çok fazla istek gönderildi. Lütfen daha sonra tekrar deneyin.' 
+        }),
+        { 
+          status: 429, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    // Record rate limit entries for both IP and email
+    await Promise.all([
+      recordRateLimitEntry(supabase, clientIp, 'ip'),
+      recordRateLimitEntry(supabase, data.email.toLowerCase(), 'email'),
+    ]);
+
+    // Occasionally clean up old rate limit entries (1% chance per request)
+    if (Math.random() < 0.01) {
+      cleanupOldRateLimits(supabase).catch(console.error);
     }
 
     // Create SMTP client
@@ -239,10 +345,16 @@ serve(async (req) => {
       }
     );
   } catch (error: unknown) {
+    // Log detailed error server-side only
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    console.error('Error sending email:', errorMessage);
+    console.error('Error sending email:', errorMessage, error);
+    
+    // Return generic error message to client to avoid information leakage
     return new Response(
-      JSON.stringify({ success: false, error: errorMessage }),
+      JSON.stringify({ 
+        success: false, 
+        error: 'E-posta gönderilirken bir hata oluştu. Lütfen daha sonra tekrar deneyin veya bizimle doğrudan iletişime geçin.' 
+      }),
       { 
         status: 500, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
