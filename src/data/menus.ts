@@ -22,41 +22,51 @@ export interface Menu {
 export const menus: Menu[] = [
   {
     id: "klasik",
-    title: "Klasik Menü",
+    title: "Karışık Izgara Menü",
     description: "Geleneksel Türk mutfağının en sevilen tatlarından oluşan zengin menümüz.",
     price: "Kişi başı fiyat için iletişime geçin",
     icon: "🍽️",
     image: "/placeholder.svg",
-    features: ["Soğuk Mezeler", "Ara Sıcaklar", "Ana Yemek", "Tatlı"],
+    features: ["Soğuk Mezeler", "Ara Sıcak", "Ana Yemek"],
     categories: [
       {
         title: "Soğuk Mezeler",
         items: [
-          { name: "Humus", description: "Nohut püresi, tahin, limon" },
-          { name: "Patlıcan Salatası", description: "Közlenmiş patlıcan, sarımsak" },
-          { name: "Haydari", description: "Süzme yoğurt, dereotu, sarımsak" },
-          { name: "Rus Salatası", description: "Patates, havuç, bezelye, mayonez" },
-          { name: "Atom", description: "Acılı domates ezmesi" },
+          { name: "Beyaz Peynir" },
+          { name: "Domates, Salatalık" },
+          { name: "Söğüş" },
+          { name: "Haydari" },
+          { name: "Patates Salatası" },
+          { name: "Acılı Ezme" },
+          { name: "Şakşuka" }
         ],
       },
       {
-        title: "Ara Sıcaklar",
+        title: "Girişte Çerez",
         items: [
-          { name: "Sigara Böreği", description: "Peynirli, kıtır kıtır" },
-          { name: "Patlıcan Kızartma", description: "Yoğurtlu" },
-          { name: "Karides Tava", description: "Tereyağlı, sarımsaklı" },
+          { name: "Karışık Çerez", description: "Fındık, fıstık, badem karışımı" }, 
+        ],
+      },{
+        title: "Ara Sıcak",
+        items: [
+          { name: "Sigara Böreği", description: "Peynirli, kıtır kıtır" }
         ],
       },
       {
         title: "Ana Yemek",
         items: [
-          { name: "Izgara Köfte", description: "Dana kıyma, özel baharatlar" },
-          { name: "Tavuk Şiş", description: "Marine edilmiş tavuk but" },
-          { name: "Pilav", description: "Tereyağlı pirinç pilavı" },
+          { name: "Bonfile ve Kasap Köfte", description: "Pilav eşliğinde" },
+          { name: "Izgara Tavuk", description: "Pilav eşliğinde" }
         ],
       },
       {
-        title: "Tatlı",
+        title: "Salata",
+        items: [
+          { name: "Mevsim Salatası", description: "Taze mevsim yeşillikleri" },
+        ],
+      },
+      {
+        title: "Meyve",
         items: [
           { name: "Mevsim Meyveleri", description: "Taze mevsim meyveleri" },
         ],
