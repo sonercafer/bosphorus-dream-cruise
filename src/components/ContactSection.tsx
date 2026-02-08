@@ -125,7 +125,7 @@ const ContactSection = () => {
                 </div>
                 <div>
                   <div className="text-sm text-muted-foreground">Telefon</div>
-                  <div className="text-foreground font-medium">0555 123 45 67</div>
+                  <div className="text-foreground font-medium">0543 203 50 37</div>
                 </div>
               </a>
 
@@ -209,7 +209,7 @@ const ContactSection = () => {
                     value={formData.phone}
                     onChange={handleInputChange}
                     className="w-full px-4 py-3 rounded-xl bg-muted/50 border border-border/50 text-foreground placeholder:text-muted-foreground focus:border-gold focus:outline-none transition-colors"
-                    placeholder="0555 123 45 67"
+                    placeholder="0543 203 50 37"
                     required
                   />
                 </div>

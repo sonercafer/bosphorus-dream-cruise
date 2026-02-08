@@ -265,7 +265,7 @@ const QuoteModal = () => {
                 value={formData.phone}
                 onChange={handleInputChange}
                 className={inputClasses}
-                placeholder="0555 123 45 67"
+                placeholder="0543 203 50 37"
                 required
                 disabled={isRateLimited}
               />
