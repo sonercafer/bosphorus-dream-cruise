@@ -45,12 +45,16 @@ const boatFeatures = [
 
 // Tekne görselleri (placeholder - gerçek görseller eklenecek)
 const boatGallery = [
-  { id: 1, src: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&q=80", alt: "Tekne Dış Görünüm" },
-  { id: 2, src: "https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?w=800&q=80", alt: "Tekne İç Mekan" },
-  { id: 3, src: "https://images.unsplash.com/photo-1548574505-5e239809ee19?w=800&q=80", alt: "Güverte" },
-  { id: 4, src: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&q=80", alt: "Boğaz Manzarası" },
-  { id: 5, src: "https://images.unsplash.com/photo-1605281317010-fe5ffe798166?w=800&q=80", alt: "Gece Görünümü" },
-  { id: 6, src: "https://images.unsplash.com/photo-1540946485063-a40da27545f8?w=800&q=80", alt: "Davet Alanı" },
+  { id: 1, src: "https://8upload.com/image/3dcb7a31def88c89/WhatsApp_Image_2026-01-30_at_00.04.31__1_.jpeg", alt: "Tekne Dış Görünüm" },
+  { id: 2, src: "https://8upload.com/image/4366f60a78c1f37e/WhatsApp_Image_2026-01-30_at_00.04.31.jpeg", alt: "Tekne Dış Görünüm 2" },
+  { id: 3, src: "https://8upload.com/image/223dc8ace7fdbaab/WhatsApp_Image_2026-01-30_at_00.04.31__2_.jpeg", alt: "Davet Alanı" },
+  { id: 4, src: "https://8upload.com/image/d436e4721706b942/WhatsApp_Image_2026-01-30_at_00.04.32.jpeg", alt: "Davet Alanı 2" },
+  { id: 5, src: "https://8upload.com/image/1694e526657dee5f/WhatsApp_Image_2026-01-30_at_00.04.32__1_.jpeg", alt: "WC & Lavabo" },
+  { id: 6, src: "https://8upload.com/image/10dac5146384b5a8/WhatsApp_Image_2026-01-30_at_00.04.32__2_.jpeg", alt: "İç Etkinlik Alanı" },
+  { id: 7, src: "https://8upload.com/image/b2c8510c723f26c8/WhatsApp_Image_2026-01-30_at_00.05.04.jpeg", alt: "Dış Etkinlik Alanı" },
+  { id: 8, src: "https://8upload.com/image/bb26f2e423fad749/WhatsApp_Image_2026-01-30_at_00.05.04__1_.jpeg", alt: "İç Etkinlik Alanı 2" },
+  { id: 9, src: "https://8upload.com/image/e34dc477dd13a6af/WhatsApp_Image_2026-01-30_at_00.05.24.jpeg", alt: "Dış Etkinlik Alanı 2" },
+  { id: 10, src: "https://8upload.com/image/4eaf70b542c47f18/WhatsApp_Image_2026-01-30_at_00.05.24__1_.jpeg", alt: "İç Etkinlik Alanı 3" },
 ];
 
 const BoatPageContent = () => {
