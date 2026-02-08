@@ -69,9 +69,9 @@ serve(async (req) => {
 
     // Map menu ids to readable titles (frontend sends ids like: klasik, premium, vip)
     const menuTitleMap: Record<string, string> = {
-      klasik: 'Klasik Menü',
-      premium: 'Premium Menü',
-      vip: 'VIP Menü',
+      karisikMenu: 'Karışık Izgara Menü',
+      etMenu: 'Et Menü',
+      balikMenu: 'Balık Menü',
     };
 
     const rawMenu = (data.selectedMenu ?? '').trim();

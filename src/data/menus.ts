@@ -21,7 +21,7 @@ export interface Menu {
 
 export const menus: Menu[] = [
   {
-    id: "klasik",
+    id: "karisik-menu",
     title: "Karışık Izgara Menü",
     description: "Geleneksel Türk mutfağının en sevilen tatlarından oluşan zengin menümüz.",
     price: "Kişi başı fiyat için iletişime geçin",
@@ -74,99 +74,106 @@ export const menus: Menu[] = [
     ],
   },
   {
-    id: "premium",
-    title: "Premium Menü",
-    description: "Özel günleriniz için hazırlanmış, seçkin lezzetlerden oluşan premium menümüz.",
+    id: "et-menu",
+    title: "Et Izgara Menü",
+    description: "Geleneksel Türk mutfağının en sevilen tatlarından oluşan et menümüz.",
     price: "Kişi başı fiyat için iletişime geçin",
     icon: "👑",
     image: "/placeholder.svg",
-    features: ["Zengin Meze", "Deniz Ürünleri", "Et Çeşitleri", "Özel Tatlı"],
+    features: ["Mezeler", "Ara Sıcak", "Et Menü"],
     categories: [
       {
         title: "Soğuk Mezeler",
         items: [
-          { name: "Humus", description: "Nohut püresi, tahin, limon" },
-          { name: "Patlıcan Salatası", description: "Közlenmiş patlıcan, sarımsak" },
-          { name: "Haydari", description: "Süzme yoğurt, dereotu, sarımsak" },
-          { name: "Rus Salatası", description: "Patates, havuç, bezelye, mayonez" },
-          { name: "Atom", description: "Acılı domates ezmesi" },
-          { name: "Deniz Börülcesi", description: "Zeytinyağlı" },
-          { name: "Lakerda", description: "Marine edilmiş palamut" },
+          { name: "Beyaz Peynir" },
+          { name: "Domates, Salatalık" },
+          { name: "Söğüş" },
+          { name: "Haydari" },
+          { name: "Patates Salatası" },
+          { name: "Acılı Ezme" },
+          { name: "Şakşuka" }
         ],
       },
       {
-        title: "Ara Sıcaklar",
+        title: "Girişte Çerez",
         items: [
-          { name: "Sigara Böreği", description: "Peynirli, kıtır kıtır" },
-          { name: "Karides Güveç", description: "Domates soslu, kaşar peynirli" },
-          { name: "Midye Tava", description: "Tarator soslu" },
-          { name: "Kalamar", description: "Kızarmış, limonlu" },
+          { name: "Karışık Çerez", description: "Fındık, fıstık, badem karışımı" }, 
+        ],
+      },{
+        title: "Ara Sıcak",
+        items: [
+          { name: "Sigara Böreği", description: "Peynirli, kıtır kıtır" }
         ],
       },
       {
         title: "Ana Yemek",
         items: [
-          { name: "Levrek Izgara", description: "Taze levrek, sebze garnitürü" },
-          { name: "Kuzu Pirzola", description: "Özel marine, fırın patates" },
-          { name: "Dana Bonfile", description: "Tereyağlı mantar sos" },
+          { name: "Özel Soslu Dana Antrikot", description: "Patates püresi eşliğinde" }
         ],
       },
       {
-        title: "Tatlı",
+        title: "Salata",
         items: [
-          { name: "Profiterol", description: "Çikolata soslu" },
+          { name: "Mevsim Salatası", description: "Taze mevsim yeşillikleri" },
+        ],
+      },
+      {
+        title: "Meyve",
+        items: [
           { name: "Mevsim Meyveleri", description: "Taze mevsim meyveleri" },
         ],
       },
     ],
   },
   {
-    id: "vip",
-    title: "VIP Menü",
-    description: "En seçkin malzemeler ve şef özel tariflerle hazırlanan lüks menümüz.",
+    id: "balik-menu",
+    title: "Balık Menü",
+    description: "Geleneksel Türk mutfağının en sevilen tatlarından oluşan balık menümüz.",
     price: "Kişi başı fiyat için iletişime geçin",
     icon: "✨",
     image: "/placeholder.svg",
-    features: ["Şef Özel", "İthal Malzeme", "Canlı Pişirim", "Özel Sunum"],
+    features: ["Mezeler", "Ara Sıcak", "Balık Menü"],
     categories: [
-      {
-        title: "Aperatifler",
-        items: [
-          { name: "Truffle Carpaccio", description: "İnce dilimlenmiş dana, truffle yağı" },
-          { name: "Istiridye", description: "Taze, limon ve sos" },
-          { name: "Füme Somon", description: "Kapari, krema peyniri" },
-        ],
-      },
       {
         title: "Soğuk Mezeler",
         items: [
-          { name: "Özel Meze Tabağı", description: "10 çeşit seçkin meze" },
-          { name: "Havyar", description: "Rus havyarı, blini" },
-          { name: "Füme Balık Çeşitleri", description: "3 çeşit füme balık" },
+          { name: "Beyaz Peynir" },
+          { name: "Domates, Salatalık" },
+          { name: "Söğüş" },
+          { name: "Haydari" },
+          { name: "Patates Salatası" },
+          { name: "Acılı Ezme" },
+          { name: "Şakşuka" }
         ],
       },
       {
-        title: "Ara Sıcaklar",
+        title: "Girişte Çerez",
         items: [
-          { name: "Jumbo Karides", description: "Tereyağlı, sarımsaklı" },
-          { name: "Istakoz Kuyruğu", description: "Tereyağlı, limonlu" },
-          { name: "Kalamar Dolma", description: "Deniz ürünleri dolgulu" },
+          { name: "Karışık Çerez", description: "Fındık, fıstık, badem karışımı" }, 
+        ],
+      },{
+        title: "Ara Sıcak",
+        items: [
+          { name: "Sigara Böreği", description: "Peynirli, kıtır kıtır" }
         ],
       },
       {
         title: "Ana Yemek",
         items: [
-          { name: "Wagyu Biftek", description: "Premium wagyu, özel sos" },
-          { name: "Istakoz", description: "Bütün ıstakoz, tereyağlı" },
-          { name: "Kuzu Incik", description: "12 saat pişirilmiş, sebze" },
+          { name: "Özel Soslu Levrek", description: "Roka ve özel salatası eşliğinde" },
+          { name: "Çupra", description: "Roka ve özel salatası eşliğinde" }
         ],
       },
       {
-        title: "Tatlı",
+        title: "Salata",
         items: [
-          { name: "Çikolata Fondü", description: "Meyveler ile" },
-          { name: "Tiramisu", description: "Klasik İtalyan tatlısı" },
-          { name: "Macarons", description: "Fransız özel" },
+          { name: "Mevsim Salatası", description: "Taze mevsim yeşillikleri" },
+        ],
+      },
+      {
+        title: "Meyve",
+        items: [
+          { name: "Mevsim Meyveleri", description: "Taze mevsim meyveleri" },
         ],
       },
     ],
