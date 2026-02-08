@@ -119,7 +119,7 @@ const ContactSection = () => {
 
             {/* Contact Info */}
             <div className="space-y-4 mb-8">
-              <a href="tel:+905551234567" className="flex items-center gap-4 p-4 rounded-xl glass-card hover:border-gold/30 transition-all group">
+              <a href="tel:+905432035037" className="flex items-center gap-4 p-4 rounded-xl glass-card hover:border-gold/30 transition-all group">
                 <div className="w-12 h-12 rounded-full bg-gold/10 flex items-center justify-center group-hover:bg-gold/20 transition-colors">
                   <Phone className="w-5 h-5 text-gold" />
                 </div>
@@ -153,13 +153,13 @@ const ContactSection = () => {
             {/* Quick Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-3">
               <Button variant="hero" size="lg" className="flex-1 min-w-0" asChild>
-                <a href="tel:+905551234567" className="flex items-center justify-center gap-2">
+                <a href="tel:+905432035037" className="flex items-center justify-center gap-2">
                   <Phone className="w-5 h-5 shrink-0" />
                   <span className="truncate">Hemen Arayın</span>
                 </a>
               </Button>
               <Button variant="whatsapp" size="lg" className="flex-1 min-w-0" asChild>
-                <a href="https://wa.me/905551234567" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2">
+                <a href="https://wa.me/905432035037" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2">
                   <MessageCircle className="w-5 h-5 shrink-0" />
                   <span className="truncate">WhatsApp</span>
                 </a>

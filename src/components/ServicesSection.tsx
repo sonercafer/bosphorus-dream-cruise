@@ -242,7 +242,7 @@ const ServicesSection = () => {
                         <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
                       </Button>
                       <Button variant="whatsapp" size="sm" asChild>
-                        <a href="https://wa.me/905551234567" target="_blank" rel="noopener noreferrer">
+                        <a href="https://wa.me/905432035037" target="_blank" rel="noopener noreferrer">
                           <MessageCircle className="w-4 h-4" />
                           <span>WhatsApp</span>
                         </a>
